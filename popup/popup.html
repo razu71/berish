@@ -1,34 +1,42 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-  <title>Random Reloader</title>
-  <link rel="stylesheet" href="popup.css">
+    <title>Random Reloader</title>
+    <link rel="stylesheet" href="popup.css">
 </head>
+
 <body>
-  <div class="container">
-    <h1>Random Reloader</h1>
-    <div class="toggle-container">
-      <label class="switch">
-        <input type="checkbox" id="toggleSwitch">
-        <span class="slider"></span>
-      </label>
-      <span id="statusText">Disabled</span>
+    <div class="container">
+        <h1>Random Reloader</h1>
+        <div class="toggle-container">
+            <label class="switch">
+                <input type="checkbox" id="toggleSwitch">
+                <span class="slider"></span>
+            </label>
+            <span id="statusText">Disabled</span>
+        </div>
+
+        <div class="target-tab-info" id="targetTabInfo" style="display: none;">
+            <h3>Target Tab:</h3>
+            <p id="targetTabTitle">No tab selected</p>
+        </div>
+
+        <div class="interval-controls">
+            <div class="interval-input">
+                <label for="minInterval">Min Interval (seconds):</label>
+                <input type="number" id="minInterval" min="5" max="3600">
+            </div>
+            <div class="interval-input">
+                <label for="maxInterval">Max Interval (seconds):</label>
+                <input type="number" id="maxInterval" min="5" max="3600">
+            </div>
+            <button id="saveIntervals">Save Intervals</button>
+        </div>
+
+        <div id="nextReloadInfo"></div>
     </div>
-    
-    <div class="interval-controls">
-      <div class="interval-input">
-        <label for="minInterval">Min Interval (seconds):</label>
-        <input type="number" id="minInterval" min="5" max="3600">
-      </div>
-      <div class="interval-input">
-        <label for="maxInterval">Max Interval (seconds):</label>
-        <input type="number" id="maxInterval" min="5" max="3600">
-      </div>
-      <button id="saveIntervals">Save Intervals</button>
-    </div>
-    
-    <div id="nextReloadInfo"></div>
-  </div>
-  <script src="popup.js"></script>
+    <script src="popup.js"></script>
 </body>
+
 </html>

@@ -5,6 +5,8 @@ document.addEventListener("DOMContentLoaded", function () {
   const maxIntervalInput = document.getElementById("maxInterval");
   const saveIntervalsBtn = document.getElementById("saveIntervals");
   const nextReloadInfo = document.getElementById("nextReloadInfo");
+  const targetTabInfo = document.getElementById("targetTabInfo");
+  const targetTabTitle = document.getElementById("targetTabTitle");
 
   // Get current status from background script
   chrome.runtime.sendMessage({ action: "getStatus" }, function (response) {
@@ -12,6 +14,14 @@ document.addEventListener("DOMContentLoaded", function () {
     statusText.textContent = response.isActive ? "Enabled" : "Disabled";
     minIntervalInput.value = response.minInterval;
     maxIntervalInput.value = response.maxInterval;
+    
+    // Show target tab info if active
+    if (response.isActive && response.targetTab) {
+      targetTabInfo.style.display = "block";
+      targetTabTitle.textContent = response.targetTab.title || response.targetTab.url;
+    } else {
+      targetTabInfo.style.display = "none";
+    }
   });
 
   // Toggle switch handler
@@ -19,6 +29,21 @@ document.addEventListener("DOMContentLoaded", function () {
     const isActive = this.checked;
     statusText.textContent = isActive ? "Enabled" : "Disabled";
     chrome.runtime.sendMessage({ action: "toggle", value: isActive });
+    
+    // Show/hide target tab info
+    if (isActive) {
+      // Get updated status to show target tab
+      setTimeout(() => {
+        chrome.runtime.sendMessage({ action: "getStatus" }, function (response) {
+          if (response.targetTab) {
+            targetTabInfo.style.display = "block";
+            targetTabTitle.textContent = response.targetTab.title || response.targetTab.url;
+          }
+        });
+      }, 100);
+    } else {
+      targetTabInfo.style.display = "none";
+    }
   });
 
   // Save intervals handler
@@ -43,7 +68,9 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
     // Close the popup after saving intervals
-    window.close();
+    setTimeout(() => {
+      window.close();
+    }, 300);
   });
 
   // Optional: Update next reload time display
