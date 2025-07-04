@@ -8,18 +8,37 @@ document.addEventListener("DOMContentLoaded", function () {
   const targetTabInfo = document.getElementById("targetTabInfo");
   const targetTabTitle = document.getElementById("targetTabTitle");
 
+  // Listen for messages from background script
+  chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    if (request.action === "closePopup") {
+      window.close();
+    }
+    return true;
+  });
+
   // Get current status from background script
   chrome.runtime.sendMessage({ action: "getStatus" }, function (response) {
-    toggleSwitch.checked = response.isActive;
-    statusText.textContent = response.isActive ? "Enabled" : "Disabled";
-    minIntervalInput.value = response.minInterval;
-    maxIntervalInput.value = response.maxInterval;
-    
-    // Show target tab info if active
-    if (response.isActive && response.targetTab) {
-      targetTabInfo.style.display = "block";
-      targetTabTitle.textContent = response.targetTab.title || response.targetTab.url;
+    // Only show enabled state if popup is opened on the target tab
+    if (response.isCurrentTabTarget) {
+      toggleSwitch.checked = response.isActive;
+      statusText.textContent = response.isActive ? "Enabled" : "Disabled";
+      minIntervalInput.value = response.minInterval;
+      maxIntervalInput.value = response.maxInterval;
+
+      // Show target tab info if active
+      if (response.isActive && response.targetTab) {
+        targetTabInfo.style.display = "block";
+        targetTabTitle.textContent =
+          response.targetTab.title || response.targetTab.url;
+      } else {
+        targetTabInfo.style.display = "none";
+      }
     } else {
+      // Show default state if not on target tab
+      toggleSwitch.checked = false;
+      statusText.textContent = "Disabled";
+      minIntervalInput.value = 30;
+      maxIntervalInput.value = 120;
       targetTabInfo.style.display = "none";
     }
   });
@@ -29,17 +48,21 @@ document.addEventListener("DOMContentLoaded", function () {
     const isActive = this.checked;
     statusText.textContent = isActive ? "Enabled" : "Disabled";
     chrome.runtime.sendMessage({ action: "toggle", value: isActive });
-    
+
     // Show/hide target tab info
     if (isActive) {
       // Get updated status to show target tab
       setTimeout(() => {
-        chrome.runtime.sendMessage({ action: "getStatus" }, function (response) {
-          if (response.targetTab) {
-            targetTabInfo.style.display = "block";
-            targetTabTitle.textContent = response.targetTab.title || response.targetTab.url;
+        chrome.runtime.sendMessage(
+          { action: "getStatus" },
+          function (response) {
+            if (response.isCurrentTabTarget && response.targetTab) {
+              targetTabInfo.style.display = "block";
+              targetTabTitle.textContent =
+                response.targetTab.title || response.targetTab.url;
+            }
           }
-        });
+        );
       }, 100);
     } else {
       targetTabInfo.style.display = "none";
